@@ -15,7 +15,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { fileFilter } from './helpers/fileFilter.helper';
 import { fileNamer } from './helpers/fileNamer.helper';
-
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('files-get-and-upload')
 @Controller('files')
 export class FilesController {
   constructor(

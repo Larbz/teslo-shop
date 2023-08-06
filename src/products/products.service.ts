@@ -1,3 +1,4 @@
+import { User } from './../auth/entities/user.entity';
 import {
   BadRequestException,
   Inject,
@@ -27,12 +28,12 @@ export class ProductsService {
     @InjectRepository(ProductImage)
     private readonly productImageRepository: Repository<ProductImage>,
 
-    private readonly dataSourcer: DataSource,
+    private readonly dataSource: DataSource,
 
     private readonly configService: ConfigService,
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: User) {
     try {
       const { images = [], ...productDetails } = createProductDto;
       const product = this.productRepository.create({
@@ -40,6 +41,7 @@ export class ProductsService {
         images: images.map((img) =>
           this.productImageRepository.create({ url: img }),
         ),
+        user,
       });
       await this.productRepository.save(product);
       return { ...product, images };
@@ -111,7 +113,7 @@ export class ProductsService {
     };
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, user: User) {
     // const productToUpdate = await this.productRepository.findOneBy({ id });
     // if (!productToUpdate)
     //   throw new BadRequestException('Product was not found');
@@ -127,8 +129,10 @@ export class ProductsService {
     if (!product)
       throw new NotFoundException(`Product with id: ${id} not found`);
 
+    product.user = user;
+
     //Create query runner
-    const queryRunner = this.dataSourcer.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
